@@ -6,14 +6,14 @@
 
 ## О проекте
 
-API разработан в рамках обучения на Яндекс Практикум по курсу python-разработчик
+API разработан в рамках обучения на Яндекс Практикум по курсу python-разработчик.
 Проект является учебным 
 
 ### Шаги установки
 
 1. Клонируйте репозиторий:
     ```bash
-    git clone https://github.com/yourusername/django-api-project.git
+    git clone https://github.com/VNKulikov1502/api_final_yatube.git
     ```
    Перейдите в директорию проекта
 
