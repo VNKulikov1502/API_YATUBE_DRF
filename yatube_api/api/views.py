@@ -1,17 +1,12 @@
-from rest_framework import viewsets, status
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions
-from posts.models import Post, Comment, Follow, Group
-from .serializers import (
-    PostSerializer,
-    GroupSerializer,
-    CommentSerializer,
-    FollowSerializer
-)
+from posts.models import Comment, Follow, Group, Post
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
-from .permissions import AuthorOrReadOnly
 from rest_framework.response import Response
-from rest_framework import filters
+
+from .permissions import AuthorOrReadOnly
+from .serializers import (CommentSerializer, FollowSerializer, GroupSerializer,
+                          PostSerializer)
 
 
 def get_post_id(var):
