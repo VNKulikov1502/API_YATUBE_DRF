@@ -1,9 +1,6 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from posts.models import Comment, Follow, Group, Post
-
-User = get_user_model()
+from posts.models import Comment, Follow, Group, Post, User
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -53,16 +50,19 @@ class FollowSerializer(serializers.ModelSerializer):
         model = Follow
         fields = ('user', 'following')
 
-    def validate_following(self, value):
-        if self.context['request'].user == value:
-            raise serializers.ValidationError("Нельзя подписаться на себя.")
-        return value
-
-    def create(self, validated_data):
+    def validate(self, data):
         user = self.context['request'].user
-        following = validated_data['following']
+        following = data['following']
+        if user == following:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на себя.'
+            )
         if Follow.objects.filter(user=user, following=following).exists():
             raise serializers.ValidationError(
                 "Вы уже подписаны на этого пользователя."
             )
-        return Follow.objects.create(user=user, following=following)
+        return data
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)

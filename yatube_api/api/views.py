@@ -1,20 +1,16 @@
 from django.shortcuts import get_object_or_404
 from posts.models import Comment, Follow, Group, Post
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import filters, permissions, viewsets, mixins
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.response import Response
 
-from .permissions import AuthorOrReadOnly
+from .permissions import AuthorOrReadOnly, IsAdminOrReadOnly
 from .serializers import (CommentSerializer, FollowSerializer, GroupSerializer,
                           PostSerializer)
 
 
-def get_post_id(var):
-    """Получаем ID поста."""
-    return var.kwargs['post_id']
-
-
-class FollowViewSet(viewsets.ModelViewSet):
+class FollowViewSet(mixins.ListModelMixin,
+                    mixins.CreateModelMixin,
+                    viewsets.GenericViewSet):
     """Запросы подписок."""
     serializer_class = FollowSerializer
     permission_classes = (
@@ -38,31 +34,27 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (AuthorOrReadOnly,)
     pagination_class = LimitOffsetPagination
 
+    def get_post_id(self):
+        """Получаем ID поста."""
+        return self.kwargs['post_id']
+
+    def get_post(self):
+        """Проверяем существование поста."""
+        return get_object_or_404(Post, pk=self.get_post_id())
+
     def get_queryset(self):
-        return Comment.objects.filter(post_id=get_post_id(self))
+        return Comment.objects.filter(post_id=self.get_post_id())
 
     def perform_create(self, serializer):
-        post = get_object_or_404(Post, pk=get_post_id(self))
-        serializer.save(author=self.request.user, post=post)
+        serializer.save(author=self.request.user, post=self.get_post())
 
 
-class GroupViewSet(viewsets.ModelViewSet):
+class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     """Запросы к группам."""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = (AuthorOrReadOnly,)
     pagination_class = LimitOffsetPagination
-
-    def create(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return Response(
-                {
-                    'detail':
-                    'Создание объектов доступно только администратору.'
-                },
-                status=status.HTTP_405_METHOD_NOT_ALLOWED
-            )
-        return super().create(request, *args, **kwargs)
+    permission_classes = (IsAdminOrReadOnly, )
 
 
 class PostViewSet(viewsets.ModelViewSet):
