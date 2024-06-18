@@ -28,4 +28,3 @@ class IsAdminOrReadOnly(permissions.BasePermission):
                 request.method,
                 detail='Создание объектов доступно только администратору.'
             )
-        return True

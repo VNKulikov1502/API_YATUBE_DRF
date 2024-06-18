@@ -59,10 +59,6 @@ class FollowSerializer(serializers.ModelSerializer):
             )
         if Follow.objects.filter(user=user, following=following).exists():
             raise serializers.ValidationError(
-                "Вы уже подписаны на этого пользователя."
+                'Вы уже подписаны на этого пользователя.'
             )
         return data
-
-    def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
-        return super().create(validated_data)

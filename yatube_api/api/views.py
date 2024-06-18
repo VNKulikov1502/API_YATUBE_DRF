@@ -27,6 +27,9 @@ class FollowViewSet(mixins.ListModelMixin,
             'following'
         ).filter(user=self.request.user)
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Запросы к комментариям поста."""
@@ -54,7 +57,7 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = (IsAdminOrReadOnly, )
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class PostViewSet(viewsets.ModelViewSet):
